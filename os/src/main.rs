@@ -15,8 +15,8 @@
 //! We then call [`task::run_first_task()`] and for the first time go to
 //! userspace.
 
-#![deny(missing_docs)]
-#![deny(warnings)]
+#![deny(missing_docs)]// detects missing documentation for public members   公共成员必须有的注解
+#![deny(warnings)]// mass-change the level for lints which produce warnings
 #![no_std]
 #![no_main]
 #![feature(panic_info_message)]

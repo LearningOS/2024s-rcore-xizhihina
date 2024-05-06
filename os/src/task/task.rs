@@ -11,6 +11,12 @@ pub struct TaskControlBlock {
     /// Save task context
     pub task_cx: TaskContext,
 
+    /// The numbers of syscall called by task
+    pub syscall_times: [u32; MAX_SYSCALL_NUM],
+    /// The time when the task starts running
+    pub first_time: usize,
+
+    /// The status of a task
     /// Maintain the execution status of the current process
     pub task_status: TaskStatus,
 

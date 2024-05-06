@@ -50,8 +50,16 @@ pub fn sys_get_time(_ts: *mut TimeVal, _tz: usize) -> isize {
 /// HINT: You might reimplement it with virtual memory management.
 /// HINT: What if [`TaskInfo`] is splitted by two pages ?
 pub fn sys_task_info(_ti: *mut TaskInfo) -> isize {
-    trace!("kernel: sys_task_info NOT IMPLEMENTED YET!");
-    -1
+    trace!("kernel: sys_task_info");
+    let current_task = TASK_MANAGER.get_current_task();
+    unsafe{
+        *_ti = TaskInfo{
+            status: current_task.task_status,
+            syscall_times: current_task.syscall_times,
+            time: get_time_ms() - current_task.first_time,
+        };
+    }
+    0
 }
 
 // YOUR JOB: Implement mmap.

@@ -50,6 +50,20 @@ struct TaskManagerInner {
 
 lazy_static! {
     /// a `TaskManager` global instance through lazy_static!
+    // pub static ref TASK_MANAGER: TaskManager = {
+    //     println!("init TASK_MANAGER");
+    //     let num_app = get_num_app();
+    //     let mut tasks = [crate::task::TaskControlBlock {
+    //         task_cx: TaskContext::zero_init(),
+    //         task_status: TaskStatus::UnInit,
+
+    //         syscall_times: [0; crate::config::MAX_SYSCALL_NUM],
+    //         first_time: 0,
+    //     }; MAX_APP_NUM];
+    //     for (i, task) in tasks.iter_mut().enumerate() {
+    //         task.task_cx = TaskContext::goto_restore(init_app_cx(i));
+    //         task.task_status = TaskStatus::Ready;
+    //     }
     pub static ref TASK_MANAGER: TaskManager = {
         println!("init TASK_MANAGER");
         let num_app = get_num_app();
@@ -141,6 +155,14 @@ impl TaskManager {
             let current = inner.current_task;
             inner.tasks[next].task_status = TaskStatus::Running;
             inner.current_task = next;
+
+            // 记录任务开始时间
+            if inner.tasks[next].first_time == 0 {
+                inner.tasks[next].first_time = crate::timer::get_time_ms();
+                // println!("task{} start at {}", next, inner.tasks[next].firsttime);
+                
+            }
+
             let current_task_cx_ptr = &mut inner.tasks[current].task_cx as *mut TaskContext;
             let next_task_cx_ptr = &inner.tasks[next].task_cx as *const TaskContext;
             drop(inner);

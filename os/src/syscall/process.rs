@@ -2,7 +2,7 @@
 use crate::{
     config::MAX_SYSCALL_NUM,
     task::{
-        change_program_brk, exit_current_and_run_next, suspend_current_and_run_next, TaskStatus,
+        change_program_brk, exit_current_and_run_next, suspend_current_and_run_next, TaskStatus, TASK_MANAGER,
     },
 };
 
@@ -17,11 +17,11 @@ pub struct TimeVal {
 #[allow(dead_code)]
 pub struct TaskInfo {
     /// Task status in it's life cycle
-    status: TaskStatus,
+    pub status: TaskStatus,
     /// The numbers of syscall called by task
-    syscall_times: [u32; MAX_SYSCALL_NUM],
+    pub syscall_times: [u32; MAX_SYSCALL_NUM],
     /// Total running time of task
-    time: usize,
+    pub time: usize,
 }
 
 /// task exits and submit an exit code
@@ -51,12 +51,12 @@ pub fn sys_get_time(_ts: *mut TimeVal, _tz: usize) -> isize {
 /// HINT: What if [`TaskInfo`] is splitted by two pages ?
 pub fn sys_task_info(_ti: *mut TaskInfo) -> isize {
     trace!("kernel: sys_task_info");
-    let current_task = TASK_MANAGER.get_current_task();
+    let current_task_info = TASK_MANAGER.get_current_task_info();
     unsafe{
         *_ti = TaskInfo{
-            status: current_task.task_status,
-            syscall_times: current_task.syscall_times,
-            time: get_time_ms() - current_task.first_time,
+            status: current_task_info.status,
+            syscall_times: current_task_info.syscall_times,
+            time: current_task_info.time,
         };
     }
     0

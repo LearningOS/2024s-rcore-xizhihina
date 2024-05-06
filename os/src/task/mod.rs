@@ -23,6 +23,7 @@ use switch::__switch;
 pub use task::{TaskControlBlock, TaskStatus};
 
 pub use context::TaskContext;
+pub use crate::syscall::TaskInfo;
 
 /// The task manager, where all the tasks are managed.
 ///
@@ -173,6 +174,25 @@ impl TaskManager {
             // go back to user mode
         } else {
             panic!("All applications completed!");
+        }
+    }
+    /// Add a syscall times to current task
+    pub fn add_syscall_times(&self, syscall_id: usize) {
+        let mut inner = self.inner.exclusive_access();
+        let current = inner.current_task;
+        inner.tasks[current].syscall_times[syscall_id] += 1;
+        // 打印当前任务的系统调用次数
+        // println!("syscall_id: {}, syscall_times: {}", syscall_id, inner.tasks[current].syscall_times[syscall_id]);
+    }
+
+    /// Get current task info
+    pub fn get_current_task_info(&self) -> TaskInfo {
+        let inner = self.inner.exclusive_access();
+        let current = inner.current_task;
+        TaskInfo {
+            status: inner.tasks[current].task_status,
+            syscall_times: inner.tasks[current].syscall_times,
+            time: crate::timer::get_time_ms() - inner.tasks[current].first_time,
         }
     }
 }

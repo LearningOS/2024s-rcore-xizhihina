@@ -15,7 +15,7 @@ pub struct TaskControlBlock {
     /// The numbers of syscall called by task
     pub syscall_times: [u32; MAX_SYSCALL_NUM],
     /// The time when the task starts running
-    pub firsttime: usize,
+    pub first_time: usize,
 }
 
 /// The status of a task

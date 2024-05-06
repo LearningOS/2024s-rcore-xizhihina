@@ -58,7 +58,7 @@ lazy_static! {
             task_status: TaskStatus::UnInit,
 
             syscall_times: [0; MAX_SYSCALL_NUM],
-            firsttime: 0,
+            first_time: 0,
         }; MAX_APP_NUM];
         for (i, task) in tasks.iter_mut().enumerate() {
             task.task_cx = TaskContext::goto_restore(init_app_cx(i));
@@ -130,8 +130,8 @@ impl TaskManager {
             inner.current_task = next;
 
             // 记录任务开始时间
-            if inner.tasks[next].firsttime == 0 {
-                inner.tasks[next].firsttime = crate::timer::get_time_ms();
+            if inner.tasks[next].first_time == 0 {
+                inner.tasks[next].first_time = crate::timer::get_time_ms();
                 // println!("task{} start at {}", next, inner.tasks[next].firsttime);
                 
             }

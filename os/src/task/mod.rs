@@ -50,21 +50,6 @@ struct TaskManagerInner {
 }
 
 lazy_static! {
-    /// a `TaskManager` global instance through lazy_static!
-    // pub static ref TASK_MANAGER: TaskManager = {
-    //     println!("init TASK_MANAGER");
-    //     let num_app = get_num_app();
-    //     let mut tasks = [crate::task::TaskControlBlock {
-    //         task_cx: TaskContext::zero_init(),
-    //         task_status: TaskStatus::UnInit,
-
-    //         syscall_times: [0; crate::config::MAX_SYSCALL_NUM],
-    //         first_time: 0,
-    //     }; MAX_APP_NUM];
-    //     for (i, task) in tasks.iter_mut().enumerate() {
-    //         task.task_cx = TaskContext::goto_restore(init_app_cx(i));
-    //         task.task_status = TaskStatus::Ready;
-    //     }
     pub static ref TASK_MANAGER: TaskManager = {
         println!("init TASK_MANAGER");
         let num_app = get_num_app();
@@ -194,6 +179,20 @@ impl TaskManager {
             syscall_times: inner.tasks[current].syscall_times,
             time: crate::timer::get_time_ms() - inner.tasks[current].first_time,
         }
+    }
+
+    /// mmap
+    pub fn mmap(&self, _start: usize, _len: usize, _port: usize) -> isize {
+        let mut inner = self.inner.exclusive_access();
+        let current = inner.current_task;
+        inner.tasks[current].memory_set.mmap(_start, _len, _port)
+    }
+
+    /// munmap
+    pub fn munmap(&self, _start: usize, _len: usize) -> isize {
+        let mut inner = self.inner.exclusive_access();
+        let current = inner.current_task;
+        inner.tasks[current].memory_set.munmap(_start, _len)
     }
 }
 

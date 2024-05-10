@@ -1,9 +1,8 @@
 //! Process management syscalls
 use crate::{
-    config::MAX_SYSCALL_NUM,
-    task::{
-        change_program_brk, exit_current_and_run_next, suspend_current_and_run_next, TaskStatus, TASK_MANAGER,
-    },
+    config::MAX_SYSCALL_NUM, mm::translated_struct_str,task::{
+        change_program_brk, current_user_token, exit_current_and_run_next, suspend_current_and_run_next, TaskStatus, TASK_MANAGER
+    }
 };
 
 #[repr(C)]
@@ -43,7 +42,14 @@ pub fn sys_yield() -> isize {
 /// HINT: What if [`TimeVal`] is splitted by two pages ?
 pub fn sys_get_time(_ts: *mut TimeVal, _tz: usize) -> isize {
     trace!("kernel: sys_get_time");
-    -1
+    let current_time = crate::timer::get_time_us();
+    let ts=translated_struct_str(current_user_token(), _ts);
+    unsafe { 
+        *ts=TimeVal{
+        sec:current_time/1000000,
+        usec:current_time%1000000,
+    } };
+    0
 }
 
 /// YOUR JOB: Finish sys_task_info to pass testcases
@@ -51,9 +57,10 @@ pub fn sys_get_time(_ts: *mut TimeVal, _tz: usize) -> isize {
 /// HINT: What if [`TaskInfo`] is splitted by two pages ?
 pub fn sys_task_info(_ti: *mut TaskInfo) -> isize {
     trace!("kernel: sys_task_info");
+    let ti=translated_struct_str(current_user_token(), _ti);
     let current_task_info = TASK_MANAGER.get_current_task_info();
     unsafe{
-        *_ti = TaskInfo{
+        *ti = TaskInfo{
             status: current_task_info.status,
             syscall_times: current_task_info.syscall_times,
             time: current_task_info.time,

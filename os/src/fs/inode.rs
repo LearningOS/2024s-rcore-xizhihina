@@ -13,6 +13,7 @@ use alloc::vec::Vec;
 use bitflags::*;
 use easy_fs::{EasyFileSystem, Inode};
 use lazy_static::*;
+use super::{StatMode, Stat};
 
 /// inode in memory
 /// A wrapper around a filesystem inode
@@ -68,6 +69,22 @@ pub fn list_apps() {
         println!("{}", app);
     }
     println!("**************/");
+}
+
+/// Link
+pub fn link(old_name: &str, new_name: &str) ->isize{
+    ROOT_INODE.link(old_name, new_name);
+    1
+}
+
+/// Unlink
+pub fn unlink(name: &str) ->isize{
+    if ROOT_INODE.unlink(name) {
+        0
+    } else {
+        -1
+        
+    }
 }
 
 bitflags! {
@@ -154,5 +171,16 @@ impl File for OSInode {
             total_write_size += write_size;
         }
         total_write_size
+    }
+    fn stat(&self) -> Stat {
+        let inner = self.inner.exclusive_access();
+        let inode = inner.inode.as_ref();
+        Stat {
+            dev: 0,
+            ino: inode.id as u64,
+            mode: StatMode::FILE,
+            nlink: inode.nlink_cnt(),
+            pad: [0; 7],
+        }
     }
 }

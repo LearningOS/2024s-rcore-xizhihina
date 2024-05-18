@@ -1,7 +1,7 @@
 use crate::{
     config::MAX_SYSCALL_NUM,
     fs::{open_file, OpenFlags},
-    mm::{translated_ref, translated_refmut, translated_str},
+    mm::{translated_ref, translated_refmut, translated_str, translated_struct},
     task::{
         current_process, current_task, current_user_token, exit_current_and_run_next, pid2process,
         suspend_current_and_run_next, SignalFlags, TaskStatus,
@@ -167,7 +167,14 @@ pub fn sys_get_time(_ts: *mut TimeVal, _tz: usize) -> isize {
         "kernel:pid[{}] sys_get_time NOT IMPLEMENTED",
         current_task().unwrap().process.upgrade().unwrap().getpid()
     );
-    -1
+    let current_time = crate::timer::get_time_us();
+    let ts=translated_struct(current_user_token(), _ts);
+    unsafe { 
+        *ts=TimeVal{
+        sec:current_time/1000000,
+        usec:current_time%1000000,
+    } };
+    0
 }
 
 /// task_info syscall

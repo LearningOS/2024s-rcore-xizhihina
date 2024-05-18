@@ -217,6 +217,19 @@ pub fn translated_refmut<T>(token: usize, ptr: *mut T) -> &'static mut T {
         .get_mut()
 }
 
+/// Translate&Copy a ptr[T] to a mutable T through page table
+pub fn translated_struct<T>(token: usize, ptr: *const T) -> * mut T {
+    let page_table = PageTable::from_token(token);
+
+    let virt_addr = VirtAddr::from(ptr as usize);
+    let offset= virt_addr.page_offset();
+
+    let vpn = virt_addr.floor();
+    let ppn = page_table.translate(vpn).unwrap().ppn();
+
+    (ppn.0<<12|offset) as *mut T
+}
+
 /// An abstraction over a buffer passed from user space to kernel space
 pub struct UserBuffer {
     /// A list of buffers
